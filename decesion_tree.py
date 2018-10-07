@@ -16,7 +16,7 @@ def read_dataset(filename):
     fr=open(filename,'r')
     all_lines=fr.readlines()   #list形式,每行为1个str
     #print all_lines
-    labels=['年龄段', '有工作', '有自己的房子', '信贷情况'] 
+    labels=['年龄段', '有工作', '有自己的房子', '信贷情况','wuyaqi','zhaochenxi','xiewenjun','xuzhichao','xiabier'] 
     #featname=all_lines[0].strip().split(',')  #list形式
     #featname=featname[:-1]
     labelCounts={}
@@ -148,6 +148,9 @@ def CART_chooseBestFeatureToSplit(dataset):
 def CART_chooseAllFeatureToSplit(dataset):
 
     numFeatures = len(dataset[0]) - 1 #长度永远比数据集长度小一
+    print("numFeatures")
+    print(numFeatures)
+
     bestGini = 999999.0
     bestFeature = -1
     gini_list = [0 for n in range(numFeatures)]
@@ -278,6 +281,8 @@ def CART_createTree(dataset,labels):
     featValues = [example[bestFeat] for example in dataset] # 将最优类别列对应的dataset列出
     uniqueVals = set(featValues)
    
+    gini_list_sum = [0 for n in range(len(dataset[0]) )] # 长度应该是原始dataset[0]小两个
+
     # 调试使用
     #print("\n featValues")
     #print( featValues)
@@ -285,49 +290,27 @@ def CART_createTree(dataset,labels):
     #print("\n uniqueVals")
     #print( uniqueVals)
 
-    # 调试使用
-    CART_createTree_new(dataset,bestFeat)
+    #for value in uniqueVals:
+    #    sublabels = labels[:] #将删除最优索引的labels内容列出来
+
+    #    #调试使用
+    #    print("\n sublabels")
+    #    print(sublabels)
+
+    #    # 调试使用
+    #    print("\n splitdataset(dataset, bestfeat, value)") 
+    #    print(splitdataset(dataset, bestFeat, value)) #根据最优序列的每个value,将剩下的dataset作为下次循环的输入
+
+    #    CARTTree[bestFeatLabel][value] = CART_createTree_new(splitdataset(dataset, bestFeat, value), sublabels,bestFeat )
     
-
     for value in uniqueVals:
-        sublabels = labels[:] #将删除最优索引的labels内容列出来
-
-        #调试使用
-        print("\n sublabels")
-        print(sublabels)
-
-        # 调试使用
-        print("\n splitdataset(dataset, bestfeat, value)") 
-        print(splitdataset(dataset, bestfeat, value)) #根据最优序列的每个value,将剩下的dataset作为下次循环的输入
-
-        carttree[bestfeatlabel][value] = cart_createtree(splitdataset(dataset, bestfeat, value), sublabels)
-
-    return CARTTree 
-
-# 定义计算基尼指数和的函数：输入为：数据集和最优序列数
-def CART_createTree_new(dataset,bestFeat):
-    
-    #得到最优序列数当中独立的取值
-    featValues = [example[bestFeat] for example in dataset] # 将最优类别列对应的dataset列出
-    uniqueVals = set(featValues)
-
-    gini_list_sum = [0 for n in range(len(dataset[0]) - 2)] # 长度应该是原始dataset[0]小两个
-
-    print("gini_list_sum")
-    print(gini_list_sum)
-
-    # 对数据每个数值进行处理
-    for value in uniqueVals:
-
+        #将删除最优索引的labels内容列出来
+        sublabels = labels[:]
+        
         # 将此次循环的value显示出来
         print("value")
         print(value)
         
-        #得到该取值下的数据集
-        print("\n 新函数 splitdataset(dataset, bestFeat, value)")
-        splitdataset(dataset, bestFeat, value)
-        print(splitdataset(dataset, bestFeat, value))
-
         #对数据集求各个特征基尼指数
         print("\n 新函数 gini_list总和")
         gini_list = CART_chooseAllFeatureToSplit(splitdataset(dataset, bestFeat, value))
@@ -340,20 +323,144 @@ def CART_createTree_new(dataset,bestFeat):
         print("gini_list_sum")
         print(gini_list_sum)
 
-    #对gini_list_sum最小值以及最小值对应的位置
+        #对gini_list_sum最小值以及最小值对应的位置
 
-    #查找gini_list_sum 最小值
-    min(gini_list_sum)
+        #查找gini_list_sum 最小值
+        # min(gini_list_sum)
     
-    print( "min(gini_list_sum)" )
-    print( min(gini_list_sum) )
+        #print( "min(gini_list_sum)" )
+        #print( min(gini_list_sum) )
 
-    gini_list_sum.index(min(gini_list_sum))
+        bestFeat_next = gini_list_sum.index(min(gini_list_sum))
 
-    print( "gini_list_sum.index(min(gini_list_sum))" )
-    print( gini_list_sum.index(min(gini_list_sum)) )
+        print( "gini_list_sum.index(min(gini_list_sum))" )
+        print( gini_list_sum.index(min(gini_list_sum)) )
 
-    return 0 
+    print ("此时下一层最佳特征为")
+    print ( bestFeat_next )
+
+    print ("此时下一层最佳特征对应的文字为")
+    print ( sublabels[bestFeat_next] )
+    
+    
+    # 对数据每个数值进行处理
+    for value in uniqueVals:
+
+        #将删除最优索引的labels内容列出来
+        sublabels = labels[:]
+        
+        # 将此次循环的value显示出来
+        print("value")
+        print(value)
+        
+        #得到该取值下的数据集
+        print("\n 新函数 splitdataset(dataset, bestFeat, value)")
+        splitdataset(dataset, bestFeat, value)
+        print(splitdataset(dataset, bestFeat, value))
+
+        CARTTree[bestFeatLabel][value] = CART_createTree_new(splitdataset(dataset, bestFeat, value), sublabels, bestFeat_next)
+    return CARTTree 
+
+# 定义计算基尼指数和的函数：输入为：数据集和最优序列数
+def CART_createTree_new(dataset,labels,bestFeat_next):
+    
+    # 获得数据集最后的分类标签 label
+    classList=[example[-1] for example in dataset] 
+    
+    # 分类标签完全相同，停止划分
+    if classList.count(classList[0]) == len(classList):
+        return classList[0]
+    
+    # 遍历完所有特征时返回出现次数最多的
+    if len(dataset[0]) == 1: # 不太懂什么意思 
+        return majorityCnt(classList)
+    
+    # 计算最优特征编号
+    bestFeat = bestFeat_next
+
+    # 计算最优特征编号对应的标签
+    bestFeatLabel = labels[bestFeat_next] # 将数字特征对应的汉字含义显示出来
+    print(u"\n此时最优索引为："+(bestFeatLabel)) # print到终端
+
+    # 将最新最优索引添加到CARTTree上面
+    CARTTree = {bestFeatLabel:{}}
+
+    # 将最优标签删除
+    del(labels[bestFeat])
+
+    #得到最优序列数当中独立的取值
+    featValues = [example[bestFeat] for example in dataset] # 将最优类别列对应的dataset列出
+    uniqueVals = set(featValues)
+
+    gini_list_sum = [0,0,0,0,0,0,0,0,0] # 长度应该是原始dataset[0]小两个
+
+    print("gini_list_sum")
+    print(gini_list_sum)
+
+    for value in uniqueVals:
+
+        #将删除最优索引的labels内容列出来
+        sublabels = labels[:]
+        print("sublabels")
+        print(sublabels)
+        # 将此次循环的value显示出来
+        print("value")
+        print(value)
+        
+        
+        #对数据集求各个特征基尼指数
+        print("\n 新函数 gini_list总和")
+        gini_list = CART_chooseAllFeatureToSplit(splitdataset(dataset, bestFeat, value))
+        print(gini_list)
+
+        # 方法一：这种叠加办法是可行的，但是要引入变量gini_list_sum 
+        gini_list_sum = list(map(lambda x,y:x+y,gini_list_sum,gini_list))
+        
+        # 调试使用（返回长度和计算的基尼指数长度相同
+        print("gini_list_sum")
+        print(gini_list_sum)
+
+        #对gini_list_sum最小值以及最小值对应的位置
+        if(gini_list_sum==[]):
+            bestFeat_next=0
+            print( "bestFeat_next是空集啦" )
+            print( bestFeat_next )
+        else:
+        #查找gini_list_sum 最小值
+        # min(gini_list_sum)
+    
+        # print( "min(gini_list_sum)" )
+        # print( min(gini_list_sum) )
+            bestFeat_next = gini_list_sum.index(min(gini_list_sum))
+
+            print( "gini_list_sum.index(min(gini_list_sum))" )
+            print( gini_list_sum.index(min(gini_list_sum)) )
+   
+    print ("此时下一层最佳特征为")
+    print ( bestFeat_next )
+
+    #print ("此时下一层最佳特征对应的文字为")
+    #print ( sublabels[bestFeat_next] )
+    
+    # 对数据每个数值进行处理
+    for value in uniqueVals:
+
+        #将删除最优索引的labels内容列出来
+        sublabels = labels[:]
+        
+        # 将此次循环的value显示出来
+        print("value")
+        print(value)
+        
+        #得到该取值下的数据集
+        print("\n 新函数 splitdataset(dataset, bestFeat, value)")
+        splitdataset(dataset, bestFeat, value)
+        print(splitdataset(dataset, bestFeat, value))
+
+        #计算最优数据集   
+        CARTTree[bestFeatLabel][value] = CART_createTree_new(splitdataset(dataset, bestFeat, value), sublabels, bestFeat_next)
+
+    return CARTTree 
 
 
 
